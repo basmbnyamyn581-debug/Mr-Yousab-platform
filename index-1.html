@@ -157,6 +157,7 @@ h2 { font-size: 20px; font-weight: 900; margin-bottom: 16px; }
 
 /* ANIMATIONS */
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes livePulse { 0%,100% { box-shadow: 0 0 0 0 rgba(255,82,82,0.4); } 50% { box-shadow: 0 0 0 8px rgba(255,82,82,0); } }
 @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.08)} }
 @keyframes loading { 0%{width:0%} 50%{width:80%} 100%{width:100%} }
@@ -246,6 +247,7 @@ h2 { font-size: 20px; font-weight: 900; margin-bottom: 16px; }
     <button class="nav-btn" onclick="showSection('support',this)" title="الدعم الفني">🛠</button>
     <button class="nav-btn" onclick="showSection('chat',this)" title="واتساب">💬</button>
     <div style="flex:1;"></div>
+    <button class="nav-btn" onclick="showSection('live',this)" title="البث المباشر" id="liveNavBtn">📡</button>
     <button class="nav-btn" onclick="showSection('leaderboard',this)" title="الليدربورد">🏆</button>
 <button class="nav-btn" onclick="showSection('studyplan',this)" title="خطة المذاكرة">🎯</button>
 <button class="nav-btn" onclick="toggleDayNight()" title="وضع نهار/ليل" id="dayNightBtn">🌙</button>
@@ -275,8 +277,32 @@ h2 { font-size: 20px; font-weight: 900; margin-bottom: 16px; }
           <div><div style="font-size:15px;font-weight:900;">أ. Yousab Hany</div><div style="font-size:12px;color:var(--muted);margin-top:4px;">مدرس رياضيات - المرحلة الإعدادية</div><div style="font-size:11px;color:var(--green);margin-top:6px;font-weight:700;">📞 01202591476</div></div>
         </div>
       </div>
+      <!-- Live Banner -->
+      <div id="liveBanner" style="display:none;margin-top:8px;">
+        <div onclick="showSection('live',document.getElementById('liveNavBtn'))" style="cursor:pointer;background:linear-gradient(135deg,rgba(255,50,50,0.18),rgba(255,100,50,0.1));border:1.5px solid rgba(255,80,80,0.4);border-radius:18px;padding:14px 18px;display:flex;align-items:center;gap:14px;animation:livePulse 1.5s infinite;">
+          <div style="font-size:28px;">📡</div>
+          <div style="flex:1;">
+            <div style="font-size:14px;font-weight:900;color:#ff5252;">🔴 يوجد بث مباشر الآن!</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:3px;">اضغط للمشاهدة</div>
+          </div>
+          <div style="background:#ff5252;color:#fff;border-radius:10px;padding:6px 12px;font-size:12px;font-weight:900;">شاهد</div>
+        </div>
+      </div>
+
       <h2 style="margin-top:8px;">آخر المحاضرات 🎬</h2>
       <div id="homeRecentLectures"></div>
+    </div>
+
+    <!-- LIVE -->
+    <div class="section" id="sec-live">
+      <h2>📡 البث المباشر</h2>
+      <div id="liveContent">
+        <div style="text-align:center;padding:60px 20px;color:var(--muted);">
+          <div style="font-size:48px;margin-bottom:12px;">📡</div>
+          <div style="font-size:16px;font-weight:800;">لا يوجد بث مباشر حالياً</div>
+          <div style="font-size:13px;margin-top:8px;">سيظهر البث هنا عند بدء الأستاذ</div>
+        </div>
+      </div>
     </div>
 
     <!-- COURSES -->
@@ -665,6 +691,7 @@ function openMainPage() {
   document.getElementById('supportBar').style.display='block';
   updateHomeInfo();
   checkUnreadNotifs();
+  checkLiveStatus();
   setTimeout(()=>{ if(!document.getElementById('botMessages').innerHTML.trim()) initBot(); },100);
 }
 
@@ -1254,7 +1281,8 @@ function openAdminPanel() {
       </div>
       <!-- Admin Tabs -->
       <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:20px;">
-        <button class="admin-tab-btn active" onclick="switchAdminTab('lectures',this)">📚 محاضرات</button>
+        <button class="admin-tab-btn" onclick="switchAdminTab('live',this)">📡 بث مباشر</button>
+        <button class="admin-tab-btn" onclick="switchAdminTab('lectures',this)">📚 محاضرات</button>
         <button class="admin-tab-btn" onclick="switchAdminTab('videos',this)">🎬 فيديو</button>
         <button class="admin-tab-btn" onclick="switchAdminTab('files',this)">📁 ملف</button>
         <button class="admin-tab-btn" onclick="switchAdminTab('quizzes',this)">📝 كويز</button>
@@ -1266,6 +1294,22 @@ function openAdminPanel() {
         <button class="admin-tab-btn" onclick="switchAdminTab('essayreview',this)">📋 مراجعة المقالي</button>
         <button class="admin-tab-btn" onclick="switchAdminTab('bg',this)">🖼 الخلفية</button>
         <button class="admin-tab-btn" onclick="switchAdminTab('apikey',this)">🔑 إعدادات API</button>
+      </div>
+
+      <!-- LIVE TAB -->
+      <div class="admin-section" id="atab-live">
+        <h2>📡 البث المباشر</h2>
+        <div style="background:rgba(255,80,80,0.07);border:1.5px solid rgba(255,80,80,0.25);border-radius:16px;padding:16px;margin-bottom:18px;font-size:13px;color:var(--muted);line-height:1.9;">
+          🎯 <strong style="color:var(--text);">إزاي تعمل بث مباشر؟</strong><br>
+          ١. ارفع Live على YouTube واختار "غير مدرج"<br>
+          ٢. انسخ رابط البث وحطه هنا<br>
+          ٣. الطلاب هيشوفوا إشعار فوري ويقدروا يتفرجوا جوه المنصة
+        </div>
+        <div id="liveStatusAdmin" style="margin-bottom:14px;"></div>
+        <label style="font-size:12px;font-weight:800;color:var(--muted);display:block;margin-bottom:8px;">رابط البث (YouTube):</label>
+        <input class="admin-input" id="aLiveUrl" placeholder="https://youtube.com/live/...">
+        <button class="admin-btn" onclick="saveLiveUrl()" style="background:linear-gradient(135deg,#ff5252,#ff8a50);">🔴 بدء البث</button>
+        <button onclick="stopLive()" style="width:100%;background:rgba(255,87,87,0.1);border:1.5px solid rgba(255,87,87,0.3);border-radius:12px;padding:11px;color:var(--red);font-family:Cairo,sans-serif;font-size:14px;font-weight:800;cursor:pointer;margin-top:8px;">⏹ إيقاف البث</button>
       </div>
 
       <!-- LECTURES TAB -->
@@ -1907,7 +1951,7 @@ window.onload = async function() {
   if(loader) loader.style.display='flex';
   await loadFromFirebase();
   if(loader) loader.style.display='none';
-  showPage('loginPage');
+  document.getElementById('loginPage').classList.add('active');
   // Load background from Supabase
   try {
     const bgData = await sbGet('bg');
@@ -2427,6 +2471,399 @@ function loadBgSettings() {
   if(bEl) { bEl.value = brightness; document.getElementById('brightnessVal').textContent = parseFloat(brightness).toFixed(1); }
   if(oEl) { oEl.value = overlay; document.getElementById('overlayVal').textContent = overlay+'%'; }
 }
+
+
+
+// ===== LIVE FUNCTIONS =====
+function getYouTubeEmbedUrl(url) {
+  if(!url) return '';
+  // Handle youtu.be/xxx, youtube.com/live/xxx, youtube.com/watch?v=xxx
+  let id = '';
+  const patterns = [
+    /youtu\.be\/([a-zA-Z0-9_-]+)/,
+    /youtube\.com\/live\/([a-zA-Z0-9_-]+)/,
+    /[?&]v=([a-zA-Z0-9_-]+)/,
+    /youtube\.com\/embed\/([a-zA-Z0-9_-]+)/
+  ];
+  for(let p of patterns) {
+    const m = url.match(p);
+    if(m) { id = m[1]; break; }
+  }
+  return id ? `https://www.youtube.com/embed/${id}?autoplay=1&rel=0` : url;
+}
+
+async function saveLiveUrl() {
+  const url = document.getElementById('aLiveUrl').value.trim();
+  if(!url) return showToast('حط رابط البث الأول!');
+  await sbSave('live', {url, active:true, ts: Date.now()});
+  showToast('✅ تم بدء البث! الطلاب شايفينه دلوقتي');
+  renderLiveStatusAdmin();
+  checkLiveStatus();
+}
+
+async function stopLive() {
+  await sbSave('live', {url:'', active:false, ts: Date.now()});
+  showToast('⏹ تم إيقاف البث');
+  renderLiveStatusAdmin();
+  checkLiveStatus();
+}
+
+async function checkLiveStatus() {
+  try {
+    const data = await sbGet('live');
+    const banner = document.getElementById('liveBanner');
+    const liveSection = document.getElementById('liveContent');
+    if(data && data.active && data.url) {
+      // Show banner
+      if(banner) banner.style.display='block';
+      // Update live section
+      if(liveSection) {
+        const embedUrl = getYouTubeEmbedUrl(data.url);
+        liveSection.innerHTML = `
+          <div style="background:rgba(255,50,50,0.1);border:1.5px solid rgba(255,80,80,0.3);border-radius:16px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:10px;">
+            <div style="width:10px;height:10px;background:#ff5252;border-radius:50%;animation:livePulse 1.2s infinite;"></div>
+            <div style="font-size:13px;font-weight:900;color:#ff5252;">بث مباشر الآن 🔴</div>
+          </div>
+          <div style="position:relative;padding-bottom:56.25%;height:0;border-radius:16px;overflow:hidden;border:2px solid rgba(255,80,80,0.3);">
+            <iframe src="${embedUrl}" style="position:absolute;top:0;left:0;width:100%;height:100%;border:none;" allowfullscreen allow="autoplay;encrypted-media"></iframe>
+          </div>`;
+      }
+      // Pulse nav button
+      const navBtn = document.getElementById('liveNavBtn');
+      if(navBtn) { navBtn.style.color='#ff5252'; navBtn.title='📡 بث مباشر الآن!'; }
+    } else {
+      if(banner) banner.style.display='none';
+      if(liveSection) liveSection.innerHTML = `
+        <div style="text-align:center;padding:60px 20px;color:var(--muted);">
+          <div style="font-size:48px;margin-bottom:12px;">📡</div>
+          <div style="font-size:16px;font-weight:800;">لا يوجد بث مباشر حالياً</div>
+          <div style="font-size:13px;margin-top:8px;">سيظهر البث هنا عند بدء الأستاذ</div>
+        </div>`;
+      const navBtn = document.getElementById('liveNavBtn');
+      if(navBtn) { navBtn.style.color=''; navBtn.title='البث المباشر'; }
+    }
+  } catch(e) {}
+}
+
+async function renderLiveStatusAdmin() {
+  const el = document.getElementById('liveStatusAdmin');
+  if(!el) return;
+  try {
+    const data = await sbGet('live');
+    if(data && data.active && data.url) {
+      el.innerHTML = `<div style="background:rgba(61,214,140,0.1);border:1.5px solid rgba(61,214,140,0.3);border-radius:12px;padding:10px 14px;font-size:13px;font-weight:800;color:var(--green);">🔴 البث شغال الآن<br><span style="font-size:11px;font-weight:400;color:var(--muted);word-break:break-all;">${data.url}</span></div>`;
+      document.getElementById('aLiveUrl').value = data.url;
+    } else {
+      el.innerHTML = `<div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px 14px;font-size:13px;color:var(--muted);">⏹ البث متوقف حالياً</div>`;
+    }
+  } catch(e) {}
+}
+
+// ===== ADMIN FUNCTIONS =====
+function addEssayQ() {
+  const grade = document.getElementById('aEssayGrade').value;
+  const lectureId = document.getElementById('aEssayLecture').value;
+  const question = document.getElementById('aEssayQuestion').value.trim();
+  const modelAnswer = document.getElementById('aEssayModel').value.trim();
+  if(!grade||!lectureId||!question||!modelAnswer) return alert('اكمل كل البيانات!');
+  quizzes.push({id:'q_'+Date.now(),grade,lectureId,question,type:'essay',modelAnswer});
+  saveAll(); renderAdminQuizzes();
+  ['aEssayQuestion','aEssayModel'].forEach(id=>document.getElementById(id).value='');
+  showToast('تم إضافة السؤال المقالي ✅');
+}
+
+function addFile() {
+  const title=document.getElementById('aFileTitle').value.trim();
+  const url=document.getElementById('aFileUrl').value.trim();
+  const grade=document.getElementById('aFileGrade').value;
+  const lectureId=document.getElementById('aFileLecture').value;
+  if(!title||!url||!grade||!lectureId) return alert('اكمل البيانات!');
+  files.push({id:'file_'+Date.now(),title,url,grade,lectureId});
+  // Auto notify students
+  const lecNameF = lectures.find(l=>l.id===lectureId)?.title || '';
+  notifications.push({id:'n_'+Date.now(),title:'📁 ملف جديد!',body:`تم إضافة ملف جديد "${title}" في محاضرة "${lecNameF}"`,to:grade,date:new Date().toLocaleDateString('ar-EG'),time:new Date().toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'})});
+  saveAll(); renderAdminFiles();
+  ['aFileTitle','aFileUrl'].forEach(id=>document.getElementById(id).value='');
+  showToast('تم إضافة الملف وإرسال إشعار للطلاب ✅');
+}
+
+function addQuizQ() {
+  const grade=document.getElementById('aQGrade').value;
+  const lectureId=document.getElementById('aQLecture').value;
+  const question=document.getElementById('aQQuestion').value.trim();
+  const opt0=document.getElementById('aQOpt0').value.trim();
+  const opt1=document.getElementById('aQOpt1').value.trim();
+  const opt2=document.getElementById('aQOpt2').value.trim();
+  const opt3=document.getElementById('aQOpt3').value.trim();
+  const correct=parseInt(document.getElementById('aQCorrect').value);
+  if(!grade||!lectureId||!question||!opt0||!opt1||!opt2||!opt3) return alert('اكمل كل البيانات!');
+  const isFirstQ = !quizzes.find(q=>q.lectureId===lectureId);
+  quizzes.push({id:'q_'+Date.now(),grade,lectureId,question,options:[opt0,opt1,opt2,opt3],correct});
+  // Auto notify only when first question added (= new quiz)
+  if(isFirstQ) {
+    const lecNameQ = lectures.find(l=>l.id===lectureId)?.title || '';
+    notifications.push({id:'n_'+Date.now(),title:'📝 كويز جديد!',body:`تم إضافة كويز جديد لمحاضرة "${lecNameQ}" - ابدأ الاختبار دلوقتي!`,to:grade,date:new Date().toLocaleDateString('ar-EG'),time:new Date().toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'})});
+  }
+  saveAll(); renderAdminQuizzes();
+  ['aQQuestion','aQOpt0','aQOpt1','aQOpt2','aQOpt3'].forEach(id=>document.getElementById(id).value='');
+  showToast('تم إضافة السؤال ✅');
+}
+
+function applyBg(url) {
+  document.querySelectorAll('.bg-img').forEach(el=>el.style.backgroundImage=`url('${url}')`);
+  localStorage.setItem('yh_bg_url', url);
+  // Save to Firebase so all students see it
+  fbSave('platform', 'bg', {url: url}).catch(e=>console.warn(e));
+}
+
+function applyBgFromUpload() {
+  if(!uploadedBgData) return;
+  applyBg(uploadedBgData);
+  showToast('تم تغيير الخلفية ✅');
+}
+
+function changeBg() {
+  const url=document.getElementById('aBgUrl').value.trim();
+  if(!url) return;
+  applyBg(url);
+  showToast('تم تغيير الخلفية ✅');
+}
+
+function deleteFile(id) { if(!confirm('حذف؟')) return; files=files.filter(f=>f.id!==id); saveAll(); renderAdminFiles(); }
+
+function deleteNotif(id) { notifications=notifications.filter(n=>n.id!==id); saveAll(); renderAdminNotifs(); }
+
+function deleteQuiz(id) { if(!confirm('حذف؟')) return; quizzes=quizzes.filter(q=>q.id!==id); saveAll(); renderAdminQuizzes(); }
+
+function deleteStudent(phone) {
+  const s=users.find(u=>u.phone===phone); if(!s) return;
+  if(!confirm(`هل تريد حذف حساب "${s.name}"؟\nسيتم حذف كل بياناته نهائياً!`)) return;
+  users=users.filter(u=>u.phone!==phone);
+  Object.keys(progress).filter(k=>k.startsWith(phone+'_')).forEach(k=>delete progress[k]);
+  let convs=JSON.parse(localStorage.getItem('yh_bot_convs')||'[]');
+  convs=convs.filter(c=>c.phone!==phone);
+  localStorage.setItem('yh_bot_convs',JSON.stringify(convs));
+  saveAll(); renderAdminStudents();
+  showToast('تم حذف حساب '+s.name+' ✅');
+}
+
+function deleteVideo(id) { if(!confirm('حذف؟')) return; videos=videos.filter(v=>v.id!==id); saveAll(); renderAdminVideos(); }
+
+async function fbGet(col, doc) { try { const d = await db.collection(col).doc(doc).get(); return d.exists ? d.data() : null; } catch(e) { return null; } }
+
+async function fbSave(col, doc, data) { try { await db.collection(col).doc(doc).set(data); } catch(e) { console.warn(e); } }
+
+function getAnthropicKey() {
+  return localStorage.getItem('yh_anthropic_key') || '';
+}
+
+function grantExtra() {
+  const phone=document.getElementById('aExtraPhone').value.trim();
+  const lecId=document.getElementById('aExtraLecture').value;
+  if(!phone||!lecId) return alert('اكمل البيانات!');
+  const key=phone+'_lec_'+lecId;
+  progress[key+'_extra']=true;
+  saveAll();
+  showToast('تم منح الفرصة الإضافية ✅');
+  document.getElementById('aExtraPhone').value='';
+}
+
+function handleAiFile(input) {
+  const file = input.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    aiFileData = e.target.result.split(',')[1];
+    aiFileType = file.type;
+    document.getElementById('aiFilePreview').style.display = 'block';
+    if(file.type.startsWith('image/')) {
+      const img = document.getElementById('aiFileImg');
+      img.src = e.target.result; img.style.display = 'block';
+      document.getElementById('aiFileName').style.display = 'none';
+    } else {
+      document.getElementById('aiFileImg').style.display = 'none';
+      const fn = document.getElementById('aiFileName');
+      fn.textContent = '📄 ' + file.name; fn.style.display = 'block';
+    }
+    document.getElementById('aiExtractBtn').style.display = 'block';
+  };
+  reader.readAsDataURL(file);
+}
+
+function renderAdminConvs() {
+  const el=document.getElementById('aConvsList'); if(!el) return;
+  const convs=JSON.parse(localStorage.getItem('yh_bot_convs')||'[]');
+  if(!convs.length) { el.innerHTML='<div style="text-align:center;padding:30px;color:var(--muted);">لا توجد محادثات</div>'; return; }
+  el.innerHTML=convs.map((c,i)=>`
+    <div class="card" style="cursor:pointer;" onclick="showConvDetail(${i})">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div><div style="font-size:13px;font-weight:900;">${c.name}</div><div style="font-size:11px;color:var(--muted);direction:ltr;">${c.phone} · ${c.date}</div></div>
+        <div style="font-size:12px;color:var(--primary);font-weight:700;">${c.messages?.length||0} رسالة ←</div>
+      </div>
+    </div>`).join('');
+}
+
+function renderAdminFiles() {
+  const el=document.getElementById('aFilesList'); if(!el) return;
+  el.innerHTML = files.length ? files.map(f=>`
+    <div class="card" style="display:flex;align-items:center;gap:10px;">
+      <div style="flex:1;"><div style="font-size:13px;font-weight:800;">${f.title}</div><div style="font-size:11px;color:var(--muted);">${gradeNames[f.grade]||f.grade}</div></div>
+      <button onclick="deleteFile('${f.id}')" style="background:rgba(255,87,87,0.15);border:1px solid rgba(255,87,87,0.3);border-radius:8px;padding:6px 12px;color:var(--red);font-family:Cairo,sans-serif;font-size:12px;cursor:pointer;">حذف</button>
+    </div>`).join('') : '<div style="text-align:center;padding:20px;color:var(--muted);">لا توجد ملفات</div>';
+}
+
+function renderAdminNotifs() {
+  const el=document.getElementById('aNotifsListAdmin'); if(!el) return;
+  const sorted=[...notifications].reverse();
+  el.innerHTML=sorted.length ? sorted.map(n=>`
+    <div class="card" style="display:flex;align-items:center;gap:10px;">
+      <div style="flex:1;"><div style="font-size:13px;font-weight:800;">${n.title}</div><div style="font-size:11px;color:var(--muted);">${n.body.substring(0,50)}... · ${n.to==='all'?'الكل':gradeNames[n.to]||n.to}</div></div>
+      <button onclick="deleteNotif('${n.id}')" style="background:rgba(255,87,87,0.15);border:1px solid rgba(255,87,87,0.3);border-radius:8px;padding:6px 12px;color:var(--red);font-family:Cairo,sans-serif;font-size:12px;cursor:pointer;">حذف</button>
+    </div>`).join('') : '<div style="text-align:center;padding:20px;color:var(--muted);">لا توجد إشعارات</div>';
+}
+
+function renderAdminQuizzes() {
+  const el=document.getElementById('aQuizList'); if(!el) return;
+  el.innerHTML = quizzes.length ? quizzes.map((q,i)=>`
+    <div class="card" style="display:flex;align-items:center;gap:10px;">
+      <div style="flex:1;"><div style="font-size:13px;font-weight:800;">${i+1}. ${q.question}</div><div style="font-size:11px;color:var(--green);">✓ ${q.options[q.correct]}</div></div>
+      <button onclick="deleteQuiz('${q.id}')" style="background:rgba(255,87,87,0.15);border:1px solid rgba(255,87,87,0.3);border-radius:8px;padding:6px 12px;color:var(--red);font-family:Cairo,sans-serif;font-size:12px;cursor:pointer;">حذف</button>
+    </div>`).join('') : '<div style="text-align:center;padding:20px;color:var(--muted);">لا توجد أسئلة</div>';
+}
+
+function renderAdminStudents() {
+  const el=document.getElementById('studentsTableWrap'); if(!el) return;
+  if(!users.length) { el.innerHTML='<div style="text-align:center;padding:30px;color:var(--muted);">لا يوجد طلاب مسجلين</div>'; return; }
+  el.innerHTML=`<div style="margin-bottom:10px;font-size:13px;color:var(--muted);">إجمالي: <strong style="color:var(--text);">${users.length}</strong> طالب</div>`+
+  users.map((u,i)=>`
+    <div class="card" style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+      <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--primary),var(--primary2));display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:900;flex-shrink:0;">${i+1}</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:13px;font-weight:900;">${u.name}</div>
+        <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;">
+          <span style="font-size:10px;background:rgba(61,214,140,0.15);border:1px solid rgba(61,214,140,0.3);border-radius:5px;padding:1px 7px;color:var(--green);direction:ltr;">${u.phone}</span>
+          <span style="font-size:10px;background:rgba(108,99,255,0.15);border:1px solid rgba(108,99,255,0.3);border-radius:5px;padding:1px 7px;color:var(--primary);">${gradeNames[u.grade]||u.grade}</span>
+        </div>
+      </div>
+      <button onclick="deleteStudent('${u.phone}')" style="background:rgba(255,87,87,0.15);border:1px solid rgba(255,87,87,0.3);border-radius:8px;padding:6px 10px;color:var(--red);font-family:Cairo,sans-serif;font-size:11px;font-weight:800;cursor:pointer;flex-shrink:0;">حذف 🗑</button>
+    </div>`).join('');
+}
+
+function renderAdminVideos() {
+  const el=document.getElementById('aVideosList'); if(!el) return;
+  el.innerHTML = videos.length ? videos.map(v=>`
+    <div class="card" style="display:flex;align-items:center;gap:10px;">
+      <div style="flex:1;"><div style="font-size:13px;font-weight:800;">${v.title}</div><div style="font-size:11px;color:var(--muted);">${gradeNames[v.grade]||v.grade}</div></div>
+      <button onclick="deleteVideo('${v.id}')" style="background:rgba(255,87,87,0.15);border:1px solid rgba(255,87,87,0.3);border-radius:8px;padding:6px 12px;color:var(--red);font-family:Cairo,sans-serif;font-size:12px;cursor:pointer;">حذف</button>
+    </div>`).join('') : '<div style="text-align:center;padding:20px;color:var(--muted);">لا توجد فيديوهات</div>';
+}
+
+function renderEssayReview() {
+  const el = document.getElementById('essayReviewList'); if(!el) return;
+  const pending = JSON.parse(localStorage.getItem('yh_essay_pending')||'[]');
+  if(!pending.length) { el.innerHTML='<div style="text-align:center;padding:30px;color:var(--muted);">لا توجد إجابات محتاجة مراجعة ✅</div>'; return; }
+  el.innerHTML = pending.map((p,i)=>`
+    <div class="card" style="border-color:rgba(255,184,0,0.3);margin-bottom:12px;">
+      <div style="font-size:12px;color:var(--accent);font-weight:800;margin-bottom:8px;">📝 ${p.studentName} · ${p.date}</div>
+      <div style="font-size:13px;font-weight:800;margin-bottom:8px;">${p.question}</div>
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:10px;margin-bottom:8px;">
+        <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">إجابة الطالب:</div>
+        <div style="font-size:13px;line-height:1.7;">${p.studentAnswer}</div>
+      </div>
+      <div style="background:rgba(61,214,140,0.08);border:1px solid rgba(61,214,140,0.2);border-radius:10px;padding:10px;margin-bottom:12px;">
+        <div style="font-size:11px;color:var(--green);margin-bottom:4px;">الإجابة النموذجية:</div>
+        <div style="font-size:13px;line-height:1.7;">${p.modelAnswer}</div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button onclick="verdictEssay(${i},'accept')" style="flex:1;background:rgba(61,214,140,0.2);border:1.5px solid var(--green);border-radius:10px;padding:10px;color:var(--green);font-family:Cairo,sans-serif;font-size:13px;font-weight:800;cursor:pointer;">✅ قبول</button>
+        <button onclick="verdictEssay(${i},'reject')" style="flex:1;background:rgba(255,87,87,0.2);border:1.5px solid var(--red);border-radius:10px;padding:10px;color:var(--red);font-family:Cairo,sans-serif;font-size:13px;font-weight:800;cursor:pointer;">❌ رفض</button>
+      </div>
+    </div>`).join('');
+}
+
+function savePrices() {
+  localStorage.setItem('price_1',document.getElementById('aPrice1').value);
+  localStorage.setItem('price_2',document.getElementById('aPrice2').value);
+  localStorage.setItem('price_3',document.getElementById('aPrice3').value);
+  prices['1'].price=document.getElementById('aPrice1').value;
+  prices['2'].price=document.getElementById('aPrice2').value;
+  prices['3'].price=document.getElementById('aPrice3').value;
+  saveAll(); showToast('تم حفظ الأسعار ✅');
+}
+
+function searchStudentNotif() {
+  const q=document.getElementById('aNSearch').value.trim().toLowerCase();
+  const results=users.filter(u=>u.name.toLowerCase().includes(q)||u.phone.includes(q)).slice(0,5);
+  document.getElementById('aNSearchResults').innerHTML=results.map(u=>`
+    <div onclick="selectStudentNotif('${u.phone}','${u.name}')" style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 14px;margin-bottom:6px;cursor:pointer;font-size:13px;font-weight:700;">${u.name} - ${u.phone}</div>`).join('');
+}
+
+function selectStudentNotif(phone,name) {
+  document.getElementById('aNSpecificPhone').value=phone;
+  document.getElementById('aNSearch').value=name+' - '+phone;
+  document.getElementById('aNSearchResults').innerHTML='';
+}
+
+function sendNotif() {
+  const title=document.getElementById('aNTitle').value.trim();
+  const body=document.getElementById('aNBody').value.trim();
+  const to=document.getElementById('aNTo').value;
+  const specificPhone=document.getElementById('aNSpecificPhone').value;
+  if(!title||!body) return alert('اكتب العنوان والنص!');
+  if(to==='specific'&&!specificPhone) return alert('اختار الطالب أولاً!');
+  notifications.push({id:'n_'+Date.now(),title,body,to:to==='specific'?specificPhone:to,date:new Date().toLocaleDateString('ar-EG'),time:new Date().toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'})});
+  saveAll(); renderAdminNotifs();
+  ['aNTitle','aNBody'].forEach(id=>document.getElementById(id).value='');
+  showToast('تم إرسال الإشعار ✅');
+}
+
+function showConvDetail(idx) {
+  const convs=JSON.parse(localStorage.getItem('yh_bot_convs')||'[]');
+  const c=convs[idx]; if(!c) return;
+  const detail=document.getElementById('aConvDetail');
+  detail.style.display='block';
+  detail.innerHTML=`
+    <button onclick="document.getElementById('aConvDetail').style.display='none'" style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:6px 14px;color:var(--muted);font-family:Cairo,sans-serif;font-size:12px;cursor:pointer;margin-bottom:12px;">← رجوع</button>
+    <div class="card"><div style="font-size:14px;font-weight:900;margin-bottom:4px;">${c.name}</div><div style="font-size:12px;color:var(--muted);direction:ltr;">${c.phone}</div></div>
+    ${(c.messages||[]).map(m=>`<div style="display:flex;justify-content:${m.from==='user'?'flex-end':'flex-start'};margin-bottom:8px;">
+      <div style="background:${m.from==='user'?'linear-gradient(135deg,var(--primary),var(--primary2))':'var(--card)'};border:${m.from==='user'?'none':'1px solid var(--border)'};border-radius:12px;padding:8px 14px;font-size:12px;max-width:80%;line-height:1.7;">${m.text}</div>
+    </div>`).join('')}`;
+}
+
+function uploadBgImage(input) {
+  const file = input.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    uploadedBgData = e.target.result;
+    document.getElementById('bgPreviewImg').src = uploadedBgData;
+    document.getElementById('bgPreview').style.display = 'block';
+    document.getElementById('bgDropZone').style.borderColor = 'var(--primary)';
+  };
+  reader.readAsDataURL(file);
+}
+
+function verdictEssay(i, verdict) {
+  let pending = JSON.parse(localStorage.getItem('yh_essay_pending')||'[]');
+  const item = pending[i];
+  if(!item) return;
+  // Save verdict to progress
+  const key = item.studentPhone+'_essay_'+item.qId;
+  progress[key+'_verdict'] = verdict;
+  progress[key+'_done'] = true;
+  saveAll();
+  pending.splice(i,1);
+  localStorage.setItem('yh_essay_pending', JSON.stringify(pending));
+  renderEssayReview();
+  showToast(verdict==='accept'?'تم قبول الإجابة ✅':'تم رفض الإجابة ❌');
+}
+function loadLecturesForVideo() {
+  const grade = document.getElementById('aVidGrade').value;
+  const sel = document.getElementById('aVidLecture');
+  if(!grade) { sel.innerHTML='<option value="">اختار المحاضرة</option>'; return; }
+  const lecs = lectures.filter(l=>String(l.grade)===String(grade));
+  sel.innerHTML = '<option value="">اختار المحاضرة</option>' + lecs.map(l=>`<option value="${l.id}">${l.title}</option>`).join('');
+}
+function renderAdminConvs() { renderAdminConvsList(); }
 
 </script>
 </body>
